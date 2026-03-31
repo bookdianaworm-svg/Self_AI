@@ -1,0 +1,10 @@
+{
+  "projects": [
+    {
+      "id": "self-ai",
+      "name": "Self_AI",
+      "path": ".",
+      "gitRepo": true
+    }
+  ]
+}

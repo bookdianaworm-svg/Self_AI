@@ -1,0 +1,38 @@
+version: "0.1"
+application:
+  name: "Self-Improving Swarm System"
+  version: "1.0"
+  environment: "development"
+
+logging:
+  level: "DEBUG"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "logs/development.log"
+
+execution:
+  default_environment: "local"
+  max_iterations: 100
+  timeout_seconds: 600
+
+llm:
+  default_backend: "openai"
+  temperature: 0.7
+  max_tokens: 8192
+
+security:
+  enable_key_encryption: false
+  allow_dangerous_operations: true
+
+features:
+  type_checking:
+    enabled: false
+    haskell:
+      enabled: false
+    lean:
+      enabled: false
+  dual_loop:
+    enabled: false
+  backend_routing:
+    enabled: false
+  environment_routing:
+    enabled: false

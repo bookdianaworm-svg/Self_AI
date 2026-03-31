@@ -1,0 +1,49 @@
+version: "0.1"
+environments:
+  local:
+    type: "local"
+    description: "Local REPL execution"
+    max_timeout: 300
+  docker:
+    type: "docker"
+    description: "Docker containerized execution"
+    max_timeout: 600
+    image: "self-ai:latest"
+  modal:
+    type: "modal"
+    description: "Modal cloud sandbox"
+    max_timeout: 900
+    instance_type: "cpu"
+  prime:
+    type: "prime"
+    description: "Prime Intellect sandbox"
+    max_timeout: 900
+
+defaults:
+  fallback_environment: "local"
+  security_level: "medium"
+
+rules:
+  - name: "internet_required"
+    when:
+      needs_internet: true
+    choose:
+      environment: "docker"
+
+  - name: "sandbox_required"
+    when:
+      needs_docker_isolation: true
+    choose:
+      environment: "docker"
+
+  - name: "lean_verification"
+    when:
+      needs_lean_access: true
+    choose:
+      environment: "local"
+
+  - name: "long_running_task"
+    when:
+      estimated_duration: ">300"
+    choose:
+      environment: "modal"

@@ -1,0 +1,19 @@
+version: "0.1"
+haskell:
+  enabled: true
+  ghc_path: "ghc"
+  timeout_seconds: 30
+  ghc_options: ["-Wall", "-Werror"]
+
+lean:
+  enabled: true
+  lake_path: "C:\\Users\\drave\\.elan\\bin\\lake.exe"
+  lean_path: "C:\\Users\\drave\\.elan\\bin\\lean.exe"
+  mathlib: true
+  timeout_seconds: 60
+  lean_options: []
+
+type_checking:
+  fail_on_error: true
+  cache_results: true
+  cache_dir: ".type_check_cache"

@@ -1,0 +1,38 @@
+version: "0.1"
+application:
+  name: "Self-Improving Swarm System"
+  version: "1.0"
+  environment: "production"
+
+logging:
+  level: "WARNING"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "logs/production.log"
+
+execution:
+  default_environment: "docker"
+  max_iterations: 50
+  timeout_seconds: 180
+
+llm:
+  default_backend: "openai"
+  temperature: 0.5
+  max_tokens: 4096
+
+security:
+  enable_key_encryption: true
+  allow_dangerous_operations: false
+
+features:
+  type_checking:
+    enabled: true
+    haskell:
+      enabled: true
+    lean:
+      enabled: true
+  dual_loop:
+    enabled: true
+  backend_routing:
+    enabled: true
+  environment_routing:
+    enabled: true

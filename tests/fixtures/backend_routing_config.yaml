@@ -1,0 +1,88 @@
+# Sample backend routing configuration for testing
+version: "0.1"
+
+backends:
+  rlm_internal:
+    provider: internal
+    description: Default internal RLM-backed model
+    model: gpt-4
+    cost_per_1k_tokens: 0.03
+    avg_latency_ms: 200
+    lean_pass_rate: 0.75
+
+  claude_agent:
+    provider: anthropic
+    description: Claude Agent SDK
+    model: claude-3-opus
+    cost_per_1k_tokens: 0.015
+    avg_latency_ms: 300
+    lean_pass_rate: 0.85
+
+  openai_gpt:
+    provider: openai
+    description: OpenAI GPT model
+    model: gpt-4
+    cost_per_1k_tokens: 0.03
+    avg_latency_ms: 250
+    lean_pass_rate: 0.70
+
+  gemini:
+    provider: gemini
+    description: Google Gemini model
+    model: gemini-pro
+    cost_per_1k_tokens: 0.001
+    avg_latency_ms: 400
+    lean_pass_rate: 0.65
+
+defaults:
+  fallback_backend: rlm_internal
+  global_cost_priority: medium
+  global_quality_priority: high
+
+rules:
+  - name: proof_synthesis_uses_claude
+    when:
+      intent: proof_synthesis
+      complexity_score: "> 0.5"
+    choose:
+      backend: claude_agent
+      overrides:
+        - temperature: 0.1
+        - max_tokens: 4096
+    reasoning: "Claude has higher pass rate for proof synthesis tasks"
+
+  - name: simple_code_uses_openai
+    when:
+      intent: code_generation
+      complexity_score: "< 0.4"
+    choose:
+      backend: openai_gpt
+    reasoning: "OpenAI is faster for simple code generation"
+
+  - name: cost_sensitive_uses_gemini
+    when:
+      cost_sensitivity: high
+      complexity_score: "< 0.6"
+    choose:
+      backend: gemini
+    reasoning: "Gemini is most cost-effective for this complexity level"
+
+  - name: high_complexity_uses_claude
+    when:
+      complexity_score: "> 0.7"
+    choose:
+      backend: claude_agent
+    reasoning: "Claude has best performance on high complexity tasks"
+
+  - name: web_research_uses_openai
+    when:
+      intent: web_research
+    choose:
+      backend: openai_gpt
+    reasoning: "OpenAI has good web research capabilities"
+
+  - name: default_to_internal
+    when: {}
+    choose:
+      backend: rlm_internal
+    reasoning: "Default to internal backend"

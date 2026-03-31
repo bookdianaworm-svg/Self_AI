@@ -1,0 +1,48 @@
+version: "0.1"
+backends:
+  rlm_internal:
+    provider: "openai"
+    description: "Internal RLM-backed model"
+    model: "gpt-4o"
+  claude_agent:
+    provider: "anthropic"
+    description: "Claude Agent SDK"
+    model: "claude-sonnet-4-20250514"
+  mini_max:
+    provider: "minimax"
+    description: "MiniMax API"
+    model: "MiniMax-Text-01"
+
+defaults:
+  fallback_backend: "rlm_internal"
+  global_cost_priority: "medium"
+  global_quality_priority: "high"
+
+rules:
+  - name: "cheap_simple_research"
+    when:
+      intent: "web_research"
+      complexity_score: "<0.4"
+    choose:
+      backend: "rlm_internal"
+
+  - name: "deep_research_claude"
+    when:
+      intent: "web_research"
+      complexity_score: ">=0.4"
+    choose:
+      backend: "claude_agent"
+
+  - name: "code_generation"
+    when:
+      intent: "code_generation"
+      complexity_score: "<0.5"
+    choose:
+      backend: "rlm_internal"
+
+  - name: "complex_code_generation"
+    when:
+      intent: "code_generation"
+      complexity_score: ">=0.5"
+    choose:
+      backend: "claude_agent"

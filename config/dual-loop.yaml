@@ -1,0 +1,22 @@
+version: "0.1"
+dual_loop:
+  enabled: false
+  inner_loop:
+    max_iterations: 10
+    convergence_threshold: 0.01
+  outer_loop:
+    max_iterations: 50
+    evaluation_interval: 5
+
+message_queue:
+  type: "redis"
+  url: "redis://localhost:6379"
+  max_size: 10000
+
+learning:
+  store_improvements: true
+  improvement_storage_path: "data/improvements"
+  evaluation_metrics:
+    - "correctness"
+    - "efficiency"
+    - "clarity"

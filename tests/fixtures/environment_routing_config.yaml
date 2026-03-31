@@ -1,0 +1,95 @@
+# Sample environment routing configuration for testing
+version: "0.1"
+
+environments:
+  local:
+    kind: localrepl
+    description: Host Python REPL (Lean/Haskell installed here)
+    default: true
+    capabilities:
+      - lean_access
+      - haskell_access
+      - filesystem
+      - python_execution
+
+  docker:
+    kind: dockerrepl
+    description: Docker container with optional internet access
+    image: python:3.11-slim
+    network_mode: bridge
+    cpu_limit: 1.0
+    memory_limit_gb: 2
+    capabilities:
+      - filesystem
+      - python_execution
+      - internet_access
+
+  modal:
+    kind: modalrepl
+    description: Modal Sandbox for internet-facing subtasks
+    profile: default
+    cpu_limit: 2.0
+    memory_limit_gb: 4
+    capabilities:
+      - internet_access
+      - python_execution
+      - filesystem
+
+  e2b:
+    kind: e2brepl
+    description: E2B Sandbox for isolated execution
+    template: python3
+    cpu_limit: 0.5
+    memory_limit_gb: 1
+    capabilities:
+      - filesystem
+      - python_execution
+
+defaults:
+  fallback_environment: local
+  allow_remote_compute_in_dev: false
+  strict_local_for_sensitive_data: true
+
+rules:
+  - name: lean_and_haskell_always_local
+    when:
+      capabilities.needs_lean_access: true
+    choose:
+      environment: local
+    reasoning: "Lean and Haskell require local installation"
+
+  - name: internet_uses_modal
+    when:
+      capabilities.needs_internet: true
+      security.data_sensitivity: internal
+    choose:
+      environment: modal
+    reasoning: "Modal provides internet access for internal data"
+
+  - name: sensitive_data_always_local
+    when:
+      security.data_sensitivity: confidential
+    choose:
+      environment: local
+    reasoning: "Confidential data must stay local"
+
+  - name: docker_isolation_for_untrusted
+    when:
+      security.data_sensitivity: public
+      capabilities.needs_filesystem: true
+    choose:
+      environment: docker
+    reasoning: "Docker provides isolation for public data"
+
+  - name: high_cpu_uses_modal
+    when:
+      performance.expected_cpu_seconds: "> 10"
+    choose:
+      environment: modal
+    reasoning: "Modal provides more CPU resources"
+
+  - name: default_to_local
+    when: {}
+    choose:
+      environment: local
+    reasoning: "Default to local environment"

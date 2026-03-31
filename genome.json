@@ -1,0 +1,31 @@
+{
+  "version": "1.0.0",
+  "primary_goal": "Improve your own capabilities and effectiveness",
+  "llm_model": "tinyllama",
+  "max_tokens": 500,
+  "temperature": 0.7,
+  "improvement_strategies": [
+    "code_optimization",
+    "memory_enhancement",
+    "tool_integration"
+  ],
+  "safety_constraints": {
+    "max_file_size_mb": 10,
+    "forbidden_commands": [
+      "rm -rf /",
+      "sudo",
+      "chmod 777"
+    ],
+    "web_search_domains": [
+      "github.com",
+      "stackoverflow.com",
+      "arxiv.org",
+      "python.org"
+    ]
+  },
+  "evolution_params": {
+    "mutation_rate": 0.1,
+    "selection_pressure": 0.7,
+    "archive_size": 10
+  }
+}
