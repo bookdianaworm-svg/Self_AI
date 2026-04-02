@@ -1,15 +1,22 @@
 'use client';
 
 import { useTheme } from 'next-themes';
+import { useEffect, useState } from 'react';
 import { useConsoleStore } from '@/store/console-store';
 import { Moon, Sun, Keyboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export function Header() {
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const openCommandBar = useConsoleStore((s) => s.openCommandBar);
   const mode = useConsoleStore((s) => s.mode);
   const sessionId = useConsoleStore((s) => s.systemStatus);
+
+  // Avoid hydration mismatch by only rendering theme-dependent UI after mount
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <header className="h-14 border-b border-border bg-card/50 backdrop-blur-sm px-4 flex items-center justify-between">
@@ -52,9 +59,9 @@ export function Header() {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
         >
-          {theme === 'dark' ? (
+          {mounted && resolvedTheme === 'dark' ? (
             <Sun className="w-4 h-4" />
           ) : (
             <Moon className="w-4 h-4" />
