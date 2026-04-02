@@ -47,4 +47,6 @@ Thumbs.db
 
 # Dotenvx - NEVER commit these
 .env.keys
-ui/.env.keys
+ui/.env.keysui/.next/
+ui/.next/
+ui/.next/
