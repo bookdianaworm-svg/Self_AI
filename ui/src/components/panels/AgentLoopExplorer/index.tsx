@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { useAgentLoopStore } from '@/store/agent-loop-store';
+import { useConsoleStore } from '@/store/console-store';
+import { wsClient } from '@/lib/websocket';
 import { AgentSelector } from "./AgentSelector";
 import { LLMSnapshot } from "./LLMSnapshot";
 import { REPLHistory } from "./REPLHistory";
@@ -11,10 +13,27 @@ type ViewMode = "live" | "history";
 
 export const AgentLoopExplorer: React.FC = () => {
   const agentLoop = useAgentLoopStore();
-  const { agents, active_agent_id, wsConnected, setWsConnected, setActiveAgent } = agentLoop;
+  const consoleAgents = useConsoleStore((s) => s.agents);
+  const connected = useConsoleStore((s) => s.connected);
+  const { agents, active_agent_id, setActiveAgent, registerAgent } = agentLoop;
 
   const [viewMode, setViewMode] = useState<ViewMode>("live");
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
+
+  // Sync agents from console-store to agent-loop-store when they change
+  useEffect(() => {
+    Object.entries(consoleAgents).forEach(([agentId, agent]) => {
+      if (!agentLoop.agents[agentId]) {
+        // Register new agent from console store
+        registerAgent(
+          agentId,
+          agent.name || agent.agent_name || `Agent-${agentId.slice(0, 8)}`,
+          agent.depth || 0,
+          agent.parent_id || null
+        );
+      }
+    });
+  }, [consoleAgents, agentLoop.agents, registerAgent]);
 
   useEffect(() => {
     if (!selectedAgentId && Object.keys(agents).length > 0) {
@@ -23,36 +42,6 @@ export const AgentLoopExplorer: React.FC = () => {
       setActiveAgent(firstAgentId);
     }
   }, [agents, selectedAgentId, setActiveAgent]);
-
-  useEffect(() => {
-    const websocket = new WebSocket("ws://localhost:8765");
-
-    websocket.onopen = () => {
-      setWsConnected(true);
-    };
-
-    websocket.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        if (data.type === "agent_loop/update") {
-        }
-      } catch (e) {
-        console.error("Failed to parse WebSocket message:", e);
-      }
-    };
-
-    websocket.onclose = () => {
-      setWsConnected(false);
-    };
-
-    websocket.onerror = () => {
-      setWsConnected(false);
-    };
-
-    return () => {
-      websocket.close();
-    };
-  }, [setWsConnected]);
 
   const handleAgentSelect = (agentId: string | null) => {
     setSelectedAgentId(agentId);
@@ -71,8 +60,8 @@ export const AgentLoopExplorer: React.FC = () => {
       <div className="agent-loop-header">
         <h2>Agent Loop Explorer</h2>
         <div className="connection-status">
-          <span className={`status-dot ${wsConnected ? "connected" : "disconnected"}`} />
-          {wsConnected ? "Connected" : "Disconnected"}
+          <span className={`status-dot ${connected ? "connected" : "disconnected"}`} />
+          {connected ? "Connected" : "Disconnected"}
         </div>
       </div>
 

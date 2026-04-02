@@ -274,6 +274,7 @@ class AgentLoopWebSocket:
         """
         self._store = store
         self._running = True
+        store.subscribe(self._on_store_change)
 
         async def run_server():
             import websockets

@@ -31,6 +31,7 @@ class WebSocketBridge:
         ws_server: WebSocketServer,
         agent_manager: Optional[AgentManager] = None,
         message_broker: Optional[MessageBroker] = None,
+        redux_store: Optional[Any] = None,
     ):
         """
         Initialize the WebSocket bridge.
@@ -39,10 +40,12 @@ class WebSocketBridge:
             ws_server: WebSocket server instance.
             agent_manager: Optional agent manager.
             message_broker: Optional message broker.
+            redux_store: Optional Redux store for state subscription.
         """
         self._ws_server = ws_server
         self._agent_manager = agent_manager
         self._message_broker = message_broker
+        self._redux_store = redux_store
         self._lock = threading.Lock()
         self._callbacks: Dict[str, List[Callable]] = {}
 
@@ -50,6 +53,10 @@ class WebSocketBridge:
         self._ws_server.subscribe("dispatch", self._handle_dispatch)
         self._ws_server.subscribe("agent/*", self._handle_agent_message)
         self._ws_server.subscribe("message/*", self._handle_message)
+
+        # Subscribe to Redux store for auto-broadcast (Gap 4)
+        if redux_store:
+            redux_store.subscribe(self._on_redux_state_change)
 
     def set_agent_manager(self, agent_manager: AgentManager) -> None:
         """Set the agent manager."""
@@ -180,6 +187,10 @@ class WebSocketBridge:
             },
         }
         self._ws_server.broadcast("agents", update)
+
+    def _on_redux_state_change(self, state: Any) -> None:
+        """Called when Redux state changes - auto-broadcasts to UI."""
+        self.broadcast_state()
 
     def broadcast_state(self) -> None:
         """Broadcast current system state."""

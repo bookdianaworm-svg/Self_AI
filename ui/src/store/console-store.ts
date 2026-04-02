@@ -1,8 +1,8 @@
 import { create } from 'zustand';
-import type { 
-  RootState, 
-  PanelId, 
-  ConsoleMode, 
+import type {
+  RootState,
+  PanelId,
+  ConsoleMode,
   AgentEntity,
   TaskEntity,
   PermissionRequest,
@@ -16,6 +16,7 @@ import type {
   Notification
 } from '@/lib/types';
 import { CONSOLE_MODES } from '@/lib/types';
+import { wsClient } from '@/lib/websocket';
 
 interface ConsoleStore {
   connected: boolean;
@@ -179,6 +180,6 @@ export const useConsoleStore = create<ConsoleStore>((set, get) => ({
   setSystemStatus: (systemStatus) => set({ systemStatus }),
 
   dispatch: (action) => {
-    console.log('Dispatch action:', action);
+    wsClient.dispatch(action);
   },
 }));

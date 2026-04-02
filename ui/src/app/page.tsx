@@ -17,6 +17,7 @@ import { ControlPanel } from '@/components/panels/ControlPanel';
 import { ConfigPanel } from '@/components/panels/ConfigPanel';
 import { APIKeysPanel } from '@/components/panels/APIKeysPanel';
 import { AgentLoopExplorer } from '@/components/panels/AgentLoopExplorer';
+import { ImprovePanel } from '@/components/panels/ImprovePanel';
 import { cn } from '@/lib/utils';
 
 export default function Home() {
@@ -55,6 +56,8 @@ export default function Home() {
         return <APIKeysPanel />;
       case 'agent_loop':
         return <AgentLoopExplorer />;
+      case 'improve':
+        return <ImprovePanel />;
       default:
         return <TaskPanel />;
     }

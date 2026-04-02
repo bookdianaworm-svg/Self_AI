@@ -59,7 +59,7 @@ def main():
     if args.websocket:
         from rlm.console import create_websocket_server
         import asyncio
-        server = create_websocket_server(host=args.host, port=args.port)
+        server = create_websocket_server(host=args.host, port=args.port, redux_store=store)
         print(f"Starting WebSocket server on {args.host}:{args.port}")
         asyncio.run(server.start())
     else:

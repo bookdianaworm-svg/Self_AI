@@ -32,7 +32,7 @@ class WebSocketConnection:
 
 
 class WebSocketServer:
-    def __init__(self, host: str = "localhost", port: int = 8765):
+    def __init__(self, host: str = "localhost", port: int = 8765, redux_store: Optional[Any] = None):
         self.host = host
         self.port = port
         self.connections: Dict[str, WebSocketConnection] = {}
@@ -41,6 +41,10 @@ class WebSocketServer:
         self._running = False
         self._server = None
         self._poll_interval_ms = 1000
+        self._redux_store = redux_store
+        # Auto-broadcast Redux state changes to all clients
+        if redux_store:
+            redux_store.subscribe(self._on_redux_state_change)
 
     async def start(self):
         self._running = True
@@ -123,6 +127,9 @@ class WebSocketServer:
 
         elif msg_type == "dispatch":
             action = payload.get("action", {})
+            # Dispatch to Redux store if available
+            if self._redux_store:
+                self._redux_store.dispatch(action)
             self._notify_subscribers("dispatch", action)
             response = {"type": "dispatch_ack", "payload": {"action": action}}
             await self._send(writer, response)
@@ -272,6 +279,28 @@ class WebSocketServer:
                 except Exception as e:
                     print(f"Error in subscriber callback: {e}")
 
+    def _on_redux_state_change(self, state: Any):
+        """Called when Redux state changes - broadcasts to UI clients."""
+        self.broadcast("state", {"state": self._serialize_state(state)})
+
+    def _serialize_state(self, state: Any) -> Dict[str, Any]:
+        """Serialize Redux state for UI consumption."""
+        if state is None:
+            return {}
+        # Serialize the main slices that the UI cares about
+        return {
+            "verification": vars(state.verification) if hasattr(state, 'verification') else {},
+            "routing": vars(state.routing) if hasattr(state, 'routing') else {},
+            "tasks": vars(state.tasks) if hasattr(state, 'tasks') else {},
+            "permissions": vars(state.permissions) if hasattr(state, 'permissions') else {},
+            "tools": vars(state.tools) if hasattr(state, 'tools') else {},
+            "improvements": vars(state.improvements) if hasattr(state, 'improvements') else {},
+            "agents": vars(state.agents) if hasattr(state, 'agents') else {},
+            "messages": vars(state.messages) if hasattr(state, 'messages') else {},
+            "system": vars(state.system) if hasattr(state, 'system') else {},
+            "ui": vars(state.ui) if hasattr(state, 'ui') else {},
+        }
+
     def get_connection_count(self) -> int:
         with self._lock:
             return sum(1 for c in self.connections.values() if c.state == ConnectionState.CONNECTED)
@@ -383,8 +412,8 @@ class WebSocketClient:
         self._dispatch_callbacks.append(callback)
 
 
-def create_websocket_server(host: str = "localhost", port: int = 8765) -> WebSocketServer:
-    return WebSocketServer(host, port)
+def create_websocket_server(host: str = "localhost", port: int = 8765, redux_store: Optional[Any] = None) -> WebSocketServer:
+    return WebSocketServer(host, port, redux_store)
 
 
 def create_websocket_client(url: str = "ws://localhost:8765") -> WebSocketClient:
