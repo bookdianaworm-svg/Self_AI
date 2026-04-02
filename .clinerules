@@ -1,0 +1,250 @@
+# Cline Rules for Self_AI Project
+# These rules ensure careful, professional development practices
+
+version: "1.0"
+
+# =============================================================================
+# CODEBASE AWARENESS
+# =============================================================================
+
+rules:
+
+  - name: "read-before-modify"
+    description: "Must read existing files before making changes"
+    instruction: |
+      Before editing ANY file, you MUST:
+      1. Use the Read tool to load the file's full content
+      2. Understand the existing patterns, conventions, and structure
+      3. Identify what other files might be affected by your changes
+      4. Never assume you know what a file contains - always read it first
+
+  - name: "understand-dependencies"
+    description: "Understand module dependencies before changing"
+    instruction: |
+      Before modifying a file, identify:
+      1. What files import or depend on it (grep for imports)
+      2. What tests exist for it
+      3. What the caller/callee relationships are
+      4. Check ARCHITECTURE.md for the module dependency tree
+
+  - name: "python-import-order"
+    description: "Maintain proper Python import organization"
+    instruction: |
+      Python imports MUST be in this order:
+      1. Standard library imports (time, os, typing, etc.)
+      2. Third-party imports (rlm, pytest, etc.)
+      3. Local project imports (from rlm.core, etc.)
+      Use 'strict' mode for zip() where lengths must match
+
+  - name: "typescript-patterns"
+    description: "Follow existing TypeScript/React patterns"
+    instruction: |
+      For TypeScript/React code:
+      1. Use proper interface definitions for props and state
+      2. Follow existing component patterns (functional components with hooks)
+      3. Use Zustand for state management as established in the project
+      4. Maintain Tailwind CSS class ordering conventions
+
+# =============================================================================
+# IMPACT ANALYSIS
+# =============================================================================
+
+  - name: "check-affected-files"
+    description: "Analyze all files that could be affected by changes"
+    instruction: |
+      Before making changes, search for:
+      1. All imports of the module you're modifying
+      2. Type definitions that might need updating
+      3. Test files that cover the code being changed
+      4. Any related configuration files
+
+  - name: "no-unnecessary-changes"
+    description: "Don't make changes beyond what was requested"
+    instruction: |
+      1. Only change what's necessary to accomplish the task
+      2. Don't refactor adjacent code or "improve" unrelated areas
+      3. Don't add features that weren't explicitly requested
+      4. Stay focused on the specific problem being solved
+
+# =============================================================================
+# TYPE SAFETY
+# =============================================================================
+
+  - name: "maintain-type-correctness"
+    description: "Preserve and enforce type safety"
+    instruction: |
+      Python:
+      1. Use explicit type hints for all function signatures
+      2. Use Optional[T] instead of T | None for compatibility
+      3. Use dataclasses for structured data (as done in base_agent.py)
+      4. Check for protocol/interface patterns before modifying
+
+      TypeScript:
+      1. Run 'npm run type-check' after TypeScript changes
+      2. Don't use 'any' type - use proper generics or unknown
+      3. Keep interfaces aligned with backend Python types
+
+  - name: "check-types-before-commit"
+    description: "Verify type correctness before completing changes"
+    instruction: |
+      Run type checking commands:
+      - Python: mypy on modified files if available
+      - TypeScript: 'npm run type-check' in ui/ directory
+
+# =============================================================================
+# ERROR HANDLING
+# =============================================================================
+
+  - name: "preserve-error-handling"
+    description: "Don't remove or weaken existing error handling"
+    instruction: |
+      1. Never remove try/except blocks unless replacing with better handling
+      2. Maintain all error callbacks and their signatures
+      3. Preserve BudgetExceededError, TimeoutExceededError, etc. handling
+      4. Don't swallow exceptions without proper logging
+
+  - name: "consistent-exception-types"
+    description: "Use consistent exception hierarchy"
+    instruction: |
+      Use existing exception types from rlm/utils/exceptions.py:
+      - BudgetExceededError
+      - CancellationError
+      - ErrorThresholdExceededError
+      - TimeoutExceededError
+      - TokenLimitExceededError
+      Create new exceptions only when no existing type fits
+
+# =============================================================================
+# TESTING
+# =============================================================================
+
+  - name: "run-relevant-tests"
+    description: "Run tests related to modified code"
+    instruction: |
+      After making changes:
+      1. Identify relevant test files (tests/ directory)
+      2. Run tests for the specific module modified
+      3. Don't break existing test expectations
+      4. If tests fail, fix the implementation, not the tests
+
+  - name: "test-file-location"
+    description: "Follow project test file conventions"
+    instruction: |
+      Test files are located at:
+      - tests/ (root level)
+      - rlm_source/tests/
+      - Follow naming: test_<module_name>.py
+
+# =============================================================================
+# ARCHITECTURE ADHERENCE
+# =============================================================================
+
+  - name: "respect-module-boundaries"
+    description: "Don't violate established module boundaries"
+    instruction: |
+      Follow the architecture in ARCHITECTURE.md:
+      - rlm/core/ - RLM core functionality
+      - rlm/agents/ - Agent management
+      - rlm/environments/ - Execution environments
+      - rlm/routing/ - Backend and environment routing
+      - rlm/redux/ - State management slices
+      - rlm/typechecking/ - Type checking system
+      - ui/ - Next.js frontend
+
+  - name: "understand-rlm-architecture"
+    description: "Understand the RLM completion flow before modifying"
+    instruction: |
+      The RLM completion flow is:
+      1. completion() -> _spawn_completion_context()
+      2. _setup_prompt() -> message_history
+      3. Loop: _completion_turn() -> environment.execute_code()
+      4. _check_iteration_limits() -> final_answer or continue
+      5. Changes to this flow need thorough review
+
+# =============================================================================
+# UI/FRONTEND SPECIFIC
+# =============================================================================
+
+  - name: "frontend-consistency"
+    description: "Maintain frontend patterns and conventions"
+    instruction: |
+      UI directory (ui/):
+      1. React 19 with functional components
+      2. Zustand for state management (not Redux)
+      3. Tailwind CSS for styling
+      4. Run 'npm run lint' and 'npm run type-check' before finishing
+
+  - name: "no-direct-state-mutation"
+    description: "Use proper state management patterns"
+    instruction: |
+      1. Don't mutate Zustand stores directly - use setState patterns
+      2. Follow existing slice patterns for redux/ state
+      3. Maintain immutability in state updates
+
+# =============================================================================
+# DOCUMENTATION
+# =============================================================================
+
+  - name: "update-docstrings"
+    description: "Update docstrings when changing function behavior"
+    instruction: |
+      1. If changing a function's behavior, update its docstring
+      2. Document all parameters, return values, and exceptions
+      3. Use the existing docstring style: Google-style or similar
+      4. Update ARCHITECTURE.md if architectural decisions change
+
+  - name: "no-undocumented-apis"
+    description: "Don't expose undocumented interfaces"
+    instruction: |
+      1. All public methods should have docstrings
+      2. Document callback signatures and their parameters
+      3. Mark internal methods with underscore prefix
+
+# =============================================================================
+# REVIEW REQUIREMENTS
+# =============================================================================
+
+  - name: "verify-final-answer"
+    description: "Ensure code is complete and correct before finishing"
+    instruction: |
+      Before completing a task:
+      1. Read the modified files to verify changes are correct
+      2. Run relevant tests
+      3. Check that no import errors were introduced
+      4. Verify type checking passes
+      5. Confirm all affected files were considered
+
+  - name: "break-glass-procedure"
+    description: "Procedure for making significant architectural changes"
+    instruction: |
+      For significant changes:
+      1. Explain what you're about to do
+      2. Show the relevant existing code
+      3. Explain your proposed change
+      4. Wait for acknowledgment before proceeding
+      5. This applies to: routing changes, agent lifecycle, state management
+
+# =============================================================================
+# WHAT NOT TO DO
+# =============================================================================
+
+prohibited:
+  - name: "no-delete-without-check"
+    description: "Never delete files or large code blocks without verification"
+    instruction: "Always verify file contents with Read before deleting. Check git status to understand uncommitted changes."
+
+  - name: "no-magic-numbers"
+    description: "Don't use unexplained magic numbers"
+    instruction: "Extract magic numbers into named constants. Example: MAX_RETRIES = 3 instead of hardcoded 3."
+
+  - name: "no-force-push"
+    description: "Never use --force with git push"
+    instruction: "Force pushing can destroy colleagues' work. Always use regular push or create a new branch."
+
+  - name: "no-random-files"
+    description: "Don't create files in random locations"
+    instruction: "Follow project structure. Test files go in tests/, docs in docs/, etc. Respect .kilo/ for kilo-specific files."
+
+  - name: "no-skip-validation"
+    description: "Don't skip linting or type checking"
+    instruction: "Always run 'npm run lint' and 'npm run type-check' for UI changes. Address all warnings and errors."
