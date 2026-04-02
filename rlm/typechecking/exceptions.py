@@ -5,6 +5,8 @@ This module provides exception classes for handling errors that can occur
 during type checking operations.
 """
 
+from typing import Optional
+
 
 class TypeCheckerError(Exception):
     """Base exception for type checking errors."""
@@ -83,7 +85,3 @@ class TypeCheckConfigurationError(TypeCheckerError):
     """
 
     pass
-
-
-# Re-export for convenience
-from typing import Optional
